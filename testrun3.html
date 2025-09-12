@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GOMAN Facility Damage Report</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      background: linear-gradient(135deg, #1a73e8 0%, #4285f4 100%);
+      min-height: 100vh;
+      color: #333;
+    }
+
+    .header {
+      background: rgba(18, 36, 92, 0.95);
+      backdrop-filter: blur(10px);
+      color: white;
+      padding: 20px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      box-shadow: 0 2px 15px rgba(0, 0, 0, 0.2);
+    }
+
+    .header h1 {
+      font-size: 28px;
+      font-weight: 700;
+      background: linear-gradient(135deg, #ffd700, #ffed4e);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+      flex-shrink: 0;
+    }
+
+    .nav-links {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    .nav-links a {
+      color: white;
+      text-decoration: none;
+      padding: 10px 15px;
+      border-radius: 8px;
+      transition: all 0.3s ease;
+      font-weight: 500;
+      cursor: pointer;
+      white-space: nowrap;
+      min-width: fit-content;
+    }
+
+    .nav-links a:hover {
+      background: rgba(255, 255, 255, 0.1);
+      transform: translateY(-2px);
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: 40px auto;
+      padding: 0 20px;
+    }
+
+    .report-card {
+      background: rgba(255, 255, 255, 0.95);
+      backdrop-filter: blur(10px);
+      border-radius: 20px;
+      padding: 40px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .report-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+
+    .report-header h2 {
+      font-size: 32px;
+      color: #1a73e8;
+      margin-bottom: 10px;
+      font-weight: 700;
+    }
+
+    .report-header p {
+      color: #666;
+      font-size: 16px;
+    }
+
+    .report-form {
+      display: grid;
+      gap: 30px;
+    }
+
+    .form-section {
+      background: white;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 5px 20px rgba(0, 0, 0, 0.05);
+      border: 2px solid #f8f9fa;
+      transition: all 0.3s ease;
+    }
+
+    .form-section:hover {
+      border-color: #1a73e8;
+      transform: translateY(-2px);
+    }
+
+    .section-title {
+      font-size: 20px;
+      font-weight: 600;
+      color: #1a73e8;
+      margin-bottom: 20px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .upload-area {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      align-items: start;
+    }
+
+    .image-preview {
+      width: 100%;
+      height: 250px;
+      border: 3px dashed #1a73e8;
+      border-radius: 15px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(26, 115, 232, 0.05);
+      transition: all 0.3s ease;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .image-preview:hover {
+      border-color: #4285f4;
+      background: rgba(26, 115, 232, 0.1);
+    }
+
+    .preview-content {
+      text-align: center;
+      color: #666;
+    }
+
+    .preview-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+    }
+
+    .upload-controls {
+      display: flex;
+      flex-direction: column;
+      gap: 15px;
+    }
+
+    .file-input-wrapper {
+      position: relative;
+      overflow: hidden;
+      display: inline-block;
+      width: 100%;
+    }
+
+    .file-input {
+      position: absolute;
+      left: -9999px;
+    }
+
+    .file-input-label {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      background: linear-gradient(135deg, #1a73e8, #4285f4);
+      color: white;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .file-input-label:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+    }
+
+    .camera-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 15px;
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 16px;
+      transition: all 0.3s ease;
+    }
+
+    .camera-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+    }
+
+    .form-group {
+      margin-bottom: 25px;
+    }
+
+    .form-group label {
+      display: block;
+      margin-bottom: 8px;
+      font-weight: 600;
+      color: #333;
+      font-size: 16px;
+    }
+
+    .form-control {
+      width: 100%;
+      padding: 15px;
+      border: 2px solid #e1e5e9;
+      border-radius: 10px;
+      font-size: 16px;
+      transition: all 0.3s ease;
+      font-family: inherit;
+    }
+
+    .form-control:focus {
+      outline: none;
+      border-color: #1a73e8;
+      box-shadow: 0 0 0 3px rgba(26, 115, 232, 0.1);
+    }
+
+    textarea.form-control {
+      resize: vertical;
+      min-height: 150px;
+      font-family: inherit;
+      line-height: 1.5;
+    }
+
+    select.form-control {
+      cursor: pointer;
+    }
+
+    .submit-section {
+      text-align: center;
+      margin-top: 20px;
+    }
+
+    .submit-btn {
+      background: linear-gradient(135deg, #1a73e8, #4285f4);
+      color: white;
+      border: none;
+      padding: 18px 40px;
+      border-radius: 12px;
+      font-size: 18px;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      min-width: 200px;
+    }
+
+    .submit-btn:hover {
+      transform: translateY(-3px);
+      box-shadow: 0 12px 35px rgba(26, 115, 232, 0.4);
+    }
+
+    .submit-btn:active {
+      transform: translateY(-1px);
+    }
+
+    .submit-btn:disabled {
+      background: #ccc;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+    }
+
+    .success-message {
+      background: #d4edda;
+      color: #155724;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #c3e6cb;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    .error-message {
+      background: #f8d7da;
+      color: #721c24;
+      padding: 15px;
+      border-radius: 10px;
+      border: 1px solid #f5c6cb;
+      margin-bottom: 20px;
+      display: none;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .loading-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(26, 115, 232, 0.9);
+      display: none;
+      justify-content: center;
+      align-items: center;
+      z-index: 2000;
+      backdrop-filter: blur(5px);
+    }
+
+    .loading-content {
+      text-align: center;
+      color: white;
+    }
+
+    .loading-spinner {
+      width: 50px;
+      height: 50px;
+      border: 5px solid rgba(255, 255, 255, 0.3);
+      border-top: 5px solid white;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin: 0 auto 20px;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #passwordGroup {
+      display: none;
+    }
+
+    /* Admin Access Modal Styles */
+    .admin-modal {
+      display: none;
+      position: fixed;
+      z-index: 1000;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(5px);
+    }
+
+    .admin-modal-content {
+      background: white;
+      margin: 10% auto;
+      padding: 30px;
+      border-radius: 15px;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.3);
+      width: 90%;
+      max-width: 400px;
+      text-align: center;
+      position: relative;
+    }
+
+    .admin-modal h3 {
+      color: #1a73e8;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .admin-role-btn {
+      display: block;
+      width: 100%;
+      padding: 15px;
+      margin: 10px 0;
+      background: linear-gradient(135deg, #1a73e8, #4285f4);
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-size: 16px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .admin-role-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 25px rgba(26, 115, 232, 0.3);
+    }
+
+    .admin-role-btn.teacher {
+      background: linear-gradient(135deg, #27ae60, #2ecc71);
+    }
+
+    .admin-role-btn.teacher:hover {
+      box-shadow: 0 8px 25px rgba(39, 174, 96, 0.3);
+    }
+
+    .close-admin-modal {
+      position: absolute;
+      top: 10px;
+      right: 15px;
+      font-size: 28px;
+      font-weight: bold;
+      color: #999;
+      cursor: pointer;
+      line-height: 1;
+    }
+
+    .close-admin-modal:hover {
+      color: #333;
+    }
+
+    @media (max-width: 768px) {
+      .container {
+        margin: 20px auto;
+        padding: 0 15px;
+      }
+
+      .report-card {
+        padding: 25px;
+      }
+
+      .upload-area {
+        grid-template-columns: 1fr;
+        gap: 20px;
+      }
+
+      .image-preview {
+        height: 200px;
+      }
+
+      .header {
+        padding: 15px 20px;
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      .header h1 {
+        font-size: 22px;
+        text-align: center;
+      }
+
+      .nav-links {
+        gap: 8px;
+        justify-content: center;
+        width: 100%;
+      }
+
+      .nav-links a {
+        padding: 8px 12px;
+        font-size: 14px;
+        flex: 1;
+        text-align: center;
+        min-width: 80px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>🏢 GOMAN Facility Damage Reporting</h1>
+    <nav class="nav-links">
+      <a onclick="goHome()">🏠 Home</a>
+      <a onclick="goToLibrary()">📚 Library</a>
+      <a onclick="showAdminAccess()">👥 Admin Access</a>
+      <a onclick="logout()">🚪 Logout</a>
+    </nav>
+  </div>
+
+  <div class="container">
+    <div class="report-card">
+      <div class="report-header">
+        <h2>Submit a Facility Damage Report</h2>
+        <p>Help us maintain our school facilities by reporting any damaged furniture, equipment, or room fixtures.</p>
+      </div>
+
+      <div class="success-message" id="successMessage">
+        ✅ Your facility damage report has been submitted successfully! Thank you for helping us maintain our school facilities.
+      </div>
+
+      <div class="error-message" id="errorMessage">
+        ❌ Please fill in all required fields before submitting.
+      </div>
+
+      <form class="report-form" id="reportForm">
+        <!-- Photo Section -->
+        <div class="form-section">
+          <div class="section-title">
+            📸 Damage Photo Evidence
+          </div>
+          <div class="upload-area">
+            <div class="image-preview" id="imagePreview">
+              <div class="preview-content">
+                <div class="preview-icon">📷</div>
+                <div>Click to upload or take a photo</div>
+                <small>Supports: JPG, PNG, GIF (Max: 5MB)</small>
+              </div>
+            </div>
+            <div class="upload-controls">
+              <div class="file-input-wrapper">
+                <input type="file" id="photoInput" class="file-input" accept="image/*">
+                <label for="photoInput" class="file-input-label">
+                  📁 Choose from Gallery
+                </label>
+              </div>
+              <div class="file-input-wrapper">
+                <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
+                <label for="cameraInput" class="file-input-label" onclick="openCamera()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                  📱 Take Photo
+                </label>
+              </div>
+              <button type="button" class="camera-btn" onclick="clearPhoto()" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+                🗑️ Remove Photo
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Report Details Section -->
+        <div class="form-section">
+          <div class="section-title">
+            📝 Damage Details
+          </div>
+          
+          <div class="form-group">
+            <label for="reportType">Type of Damage *</label>
+            <select id="reportType" class="form-control" required>
+              <option value="">-- Select Damage Type --</option>
+              <option value="furniture">Furniture Damage</option>
+              <option value="equipment">Equipment Malfunction</option>
+              <option value="infrastructure">Infrastructure/Building Damage</option>
+              <option value="electrical">Electrical Issues</option>
+              <option value="plumbing">Plumbing Issues</option>
+              <option value="safety">Safety Hazard</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="location">Location *</label>
+            <select id="location" class="form-control" required>
+              <option value="">-- Select Location --</option>
+              <option value="11stem1">11 STEM 1 - ROOM AVR 3</option>
+              <option value="11stem2">11 STEM 2 - ROOM 304</option>
+              <option value="11stem3">11 STEM 3 - STEM LAB</option>
+              <option value="12stem1">12 STEM 1 - ROOM 310 B</option>
+              <option value="12stem2">12 STEM 2 - ROOM 311 A</option>
+              <option value="12stem3">12 STEM 3 - ROOM 311 B</option>
+              <option value="other">Other Location</option>
+            </select>
+          </div>
+
+          <div class="form-group">
+            <label for="priority">Priority Level *</label>
+            <select id="priority" class="form-control" required>
+              <option value="">-- Select Priority --</option>
+              <option value="low">Low - Minor cosmetic damage</option>
+              <option value="medium">Medium - Functional but needs repair</option>
+              <option value="high">High - Affects daily operations</option>
+              <option value="critical">Critical - Safety hazard/immediate attention needed</option>
+            </select>
+          </div>
+
+
+        </div>
+
+        <!-- GOMAN Information -->
+        <div class="form-section">
+          <div class="section-title">
+            📝 GOMAN Information
+          </div>
+          
+          <div class="form-group">
+            <label for="reporterName">Student Name *</label>
+            <input 
+              type="text" 
+              id="reporterName" 
+              class="form-control" 
+              placeholder="Enter student full name"
+              required
+            >
+          </div>
+
+          <div class="form-group">
+            <label for="lrnNumber">LRN (Learner Reference Number) *</label>
+            <input 
+              type="number" 
+              id="lrnNumber" 
+              class="form-control" 
+              placeholder="Enter student LRN (numbers only)"
+              required
+              pattern="[0-9]*"
+              inputmode="numeric"
+            >
+          </div>
+        </div>
+
+        <div class="submit-section">
+          <button type="submit" class="submit-btn" id="submitBtn">
+            📤 Submit Damage Report
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- Loading Overlay -->
+  <div id="loadingOverlay" class="loading-overlay">
+    <div class="loading-content">
+      <div class="loading-spinner"></div>
+      <h3>Submitting Report...</h3>
+      <p>Please wait while we save your damage report</p>
+    </div>
+  </div>
+
+  <!-- Admin Access Modal -->
+  <div id="adminModal" class="admin-modal">
+    <div class="admin-modal-content">
+      <span class="close-admin-modal" onclick="closeAdminModal()">&times;</span>
+      <h3>Admin Access</h3>
+      <p style="margin-bottom: 20px; color: #666;">Select your role to access private student data:</p>
+      
+      <button class="admin-role-btn teacher" onclick="showPasswordInput('teacher')">
+        👨‍🏫 Teacher Access
+      </button>
+      
+      <button class="admin-role-btn" onclick="showPasswordInput('admin')">
+        👨‍💼 School Admin Access
+      </button>
+
+      <!-- Password Input Section (Hidden by default) -->
+      <div id="passwordSection" style="display: none; margin-top: 20px;">
+        <h4 id="roleTitle" style="color: #1a73e8; margin-bottom: 15px;"></h4>
+        <input 
+          type="password" 
+          id="adminPassword" 
+          class="form-control" 
+          placeholder="Enter password"
+          style="margin-bottom: 15px;"
+        >
+        <div style="display: flex; gap: 10px;">
+          <button class="admin-role-btn" onclick="verifyPassword()" style="flex: 1;">
+            🔓 Login
+          </button>
+          <button class="admin-role-btn" onclick="cancelPasswordInput()" style="flex: 1; background: linear-gradient(135deg, #e74c3c, #c0392b);">
+            ❌ Cancel
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /* 
+    GOOGLE APPS SCRIPT SETUP INSTRUCTIONS:
+    
+    1. Go to script.google.com and create a new project
+    2. Replace default code with this Google Apps Script code:
+    
+    function doPost(e) {
+      try {
+        // Your Google Sheet ID
+        const SHEET_ID = '1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk';
+        const DRIVE_FOLDER_ID = '1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS';
+        
+        // Open the spreadsheet
+        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
+        
+        // Get or create sheets
+        let reportsSheet = spreadsheet.getSheetByName('Reports');
+        let privateSheet = spreadsheet.getSheetByName('Private_Data');
+        
+        if (!reportsSheet) {
+          reportsSheet = spreadsheet.insertSheet('Reports');
+          reportsSheet.appendRow(['Report ID', 'Timestamp', 'Damage Type', 'Location', 'Priority', 'Photo URL', 'Status']);
+        }
+        
+        if (!privateSheet) {
+          privateSheet = spreadsheet.insertSheet('Private_Data');
+          privateSheet.appendRow(['Report ID', 'Student Name', 'LRN', 'Timestamp']);
+          // Hide this sheet from regular view
+          privateSheet.hideSheet();
+        }
+        
+        // Get form data
+        const data = e.parameter;
+        const files = e.parameter.photo;
+        
+        // Generate unique report ID
+        const reportId = 'RPT' + Date.now();
+        
+        // Handle photo upload if exists
+        let photoUrl = 'No photo';
+        if (files) {
+          const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
+          const blob = Utilities.newBlob(files, 'image/jpeg', reportId + '_photo.jpg');
+          const file = folder.createFile(blob);
+          photoUrl = file.getUrl();
+        }
+        
+        // Add to Reports sheet (PUBLIC - visible to all)
+        reportsSheet.appendRow([
+          reportId,
+          new Date(data.timestamp),
+          data.reportType,
+          data.location,
+          data.priority,
+          photoUrl,
+          'Open'
+        ]);
+        
+        // Add to Private sheet (HIDDEN - admin only)
+        privateSheet.appendRow([
+          reportId,
+          data.reporterName,
+          data.lrnNumber,
+          new Date(data.timestamp)
+        ]);
+        
+        return ContentService.createTextOutput(
+          JSON.stringify({success: true})
+        ).setMimeType(ContentService.MimeType.JSON);
+        
+      } catch (error) {
+        return ContentService.createTextOutput(
+          JSON.stringify({success: false, error: error.toString()})
+        ).setMimeType(ContentService.MimeType.JSON);
+      }
+    }
+    
+    3. Deploy as web app with access "Anyone"
+    4. Copy the web app URL and replace 'YOUR_SCRIPT_ID_HERE' below
+    5. The script will automatically create two sheets:
+       - "Reports" (PUBLIC): Report ID, Timestamp, Damage Type, Location, Priority, Photo URL, Status
+       - "Private_Data" (HIDDEN): Report ID, Student Name, LRN, Timestamp
+    */
+    
+    let photoFile = null;
+
+    // Photo upload functionality
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+      handlePhotoSelection(e.target.files[0]);
+    });
+
+    // Camera input functionality
+    document.getElementById('cameraInput').addEventListener('change', function(e) {
+      handlePhotoSelection(e.target.files[0]);
+    });
+
+    function handlePhotoSelection(file) {
+      if (file) {
+        if (file.size > 5 * 1024 * 1024) { // 5MB limit
+          showError('File size must be less than 5MB');
+          return;
+        }
+        
+        photoFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').innerHTML = 
+            `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">`;
+        };
+        reader.readAsDataURL(file);
+      }
+    }
+
+    function openCamera() {
+      // Trigger the camera input which has capture="environment"
+      document.getElementById('cameraInput').click();
+    }
+
+    function clearPhoto() {
+      photoFile = null;
+      document.getElementById('photoInput').value = '';
+      document.getElementById('cameraInput').value = '';
+      document.getElementById('imagePreview').innerHTML = `
+        <div class="preview-content">
+          <div class="preview-icon">📷</div>
+          <div>Click to upload or take a photo</div>
+          <small>Supports: JPG, PNG, GIF (Max: 5MB)</small>
+        </div>
+      `;
+    }
+
+    // Form submission
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (validateForm()) {
+        submitReport();
+      } else {
+        showError('Please fill in all required fields.');
+      }
+    });
+
+    function validateForm() {
+      const requiredFields = ['reportType', 'location', 'priority', 'reporterName', 'lrnNumber'];
+      
+      for (let field of requiredFields) {
+        const element = document.getElementById(field);
+        if (!element || !element.value.trim()) {
+          showError('Please fill in all required fields.');
+          if (element) element.focus();
+          return false;
+        }
+      }
+      
+      // Validate LRN is numeric and reasonable length
+      const lrn = document.getElementById('lrnNumber').value;
+      if (!/^\d{6,12}$/.test(lrn)) {
+        showError('LRN must be 6-12 digits only.');
+        document.getElementById('lrnNumber').focus();
+        return false;
+      }
+      
+      return true;
+    }
+
+    function submitReport() {
+      const submitBtn = document.getElementById('submitBtn');
+      
+      // Show loading overlay
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Submitting...';
+      
+      // Prepare form data for Google Apps Script
+      const formData = new FormData();
+      
+      // Add form fields
+      formData.append('reportType', document.getElementById('reportType').value);
+      formData.append('location', document.getElementById('location').value);
+      formData.append('priority', document.getElementById('priority').value);
+      formData.append('reporterName', document.getElementById('reporterName').value);
+      formData.append('lrnNumber', document.getElementById('lrnNumber').value);
+      formData.append('reporterRole', 'student'); // All reports are from students
+      formData.append('timestamp', new Date().toISOString());
+      
+      // Add photo if exists
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+      
+      // Google Apps Script Web App URL
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMrUxsEcBjTncJunTQ4vRmLsuT1BXaO9zP2B3O85jefiGDIJa_vLvC3mCXYGJUAdn6cA/exec';
+      
+      // Submit to Google Apps Script
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => {
+        if (!response.ok) {
+          throw new Error('Network response was not ok');
+        }
+        return response.json();
+      })
+      .then(result => {
+        // Hide loading overlay
+        document.getElementById('loadingOverlay').style.display = 'none';
+        
+        if (result.success) {
+          // Show success message with better feedback
+          alert('✅ Report submitted successfully!\n\n📊 Report ID: RPT' + Date.now().toString().slice(-8) + '\n📚 Check Library to view all reports\n👥 Admins can access private data via Admin Access');
+          
+          // Refresh the page to reset form
+          setTimeout(() => {
+            window.location.reload();
+          }, 2000);
+          
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+      })
+      .catch(error => {
+        // Hide loading overlay
+        document.getElementById('loadingOverlay').style.display = 'none';
+        
+        console.error('Submission error:', error);
+        showError('❌ Failed to submit report. Please check your internet connection and try again.\n\nIf the problem persists, contact the IT administrator.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '📤 Submit Damage Report';
+      });
+    }
+
+    function showSuccess(message = 'Your facility damage report has been submitted successfully! Thank you for helping us maintain our school facilities.') {
+      const successElement = document.getElementById('successMessage');
+      successElement.innerHTML = `✅ ${message}`;
+      successElement.style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      
+      // Scroll to top to show message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      if (message) {
+        errorElement.innerHTML = `❌ ${message}`;
+      }
+      errorElement.style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+      
+      // Scroll to top to show message
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+
+
+    // Navigation functions
+    function goHome() {
+      alert('Redirecting to GOMAN Home...');
+    }
+
+    function goToLibrary() {
+      // Redirect to the GOMAN Google Drive folder
+      window.open('https://drive.google.com/drive/folders/1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS', '_blank');
+    }
+
+    let selectedRole = '';
+
+    function showAdminAccess() {
+      document.getElementById('adminModal').style.display = 'block';
+      // Reset modal state
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
+    }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').style.display = 'none';
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
+    }
+
+    function showPasswordInput(role) {
+      selectedRole = role;
+      document.getElementById('passwordSection').style.display = 'block';
+      document.getElementById('roleTitle').textContent = 
+        role === 'teacher' ? '👨‍🏫 Teacher Password' : '👨‍💼 Admin Password';
+      document.getElementById('adminPassword').placeholder = 
+        `Enter ${role} password`;
+      document.getElementById('adminPassword').focus();
+    }
+
+    function cancelPasswordInput() {
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
+    }
+
+    function verifyPassword() {
+      const password = document.getElementById('adminPassword').value;
+      
+      if (!password.trim()) {
+        alert('Please enter a password.');
+        document.getElementById('adminPassword').focus();
+        return;
+      }
+      
+      if (selectedRole === 'teacher' && password === 'teach123') {
+        alert('Teacher access granted! Redirecting to private student data...\n\nNote: This contains sensitive student information. Use responsibly.');
+        window.open('https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data', '_blank');
+        closeAdminModal();
+      } else if (selectedRole === 'admin' && password === 'admin123') {
+        alert('Admin access granted! Redirecting to private student data...\n\nNote: This contains sensitive student information. Use responsibly.');
+        window.open('https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data', '_blank');
+        closeAdminModal();
+      } else {
+        alert('Invalid password. Please try again.\n\nContact the school administrator if you forgot your password.');
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('adminPassword').focus();
+      }
+    }
+
+    // Allow Enter key to submit password
+    document.addEventListener('DOMContentLoaded', function() {
+      document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          verifyPassword();
+        }
+      });
+    });
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        // Redirect to Google main page
+        window.location.href = 'https://www.google.com';
+      }
+    }
+
+    // Close modal when clicking outside
+    window.onclick = function(event) {
+      const modal = document.getElementById('adminModal');
+      if (event.target === modal) {
+        closeAdminModal();
+      }
+    }
+  </script>
+</body>
+</html>
