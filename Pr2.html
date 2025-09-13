@@ -302,7 +302,6 @@
       border: 1px solid #c3e6cb;
       margin-bottom: 20px;
       display: none;
-      animation: slideIn 0.3s ease;
     }
 
     .error-message {
@@ -313,20 +312,9 @@
       border: 1px solid #f5c6cb;
       margin-bottom: 20px;
       display: none;
-      animation: slideIn 0.3s ease;
     }
 
-    @keyframes slideIn {
-      from {
-        opacity: 0;
-        transform: translateY(-10px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
+    /* Loading Overlay */
     .loading-overlay {
       position: fixed;
       top: 0;
@@ -359,10 +347,6 @@
     @keyframes spin {
       0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
-    }
-
-    #passwordGroup {
-      display: none;
     }
 
     /* Admin Access Modal Styles */
@@ -522,7 +506,7 @@
               <div class="preview-content">
                 <div class="preview-icon">📷</div>
                 <div>Click to upload or take a photo</div>
-                <small>Supports: JPG, PNG, GIF (Max: 5MB)</small>
+                <small>Supports: JPG, PNG, GIF (Max: 50MB)</small>
               </div>
             </div>
             <div class="upload-controls">
@@ -588,8 +572,6 @@
               <option value="critical">Critical - Safety hazard/immediate attention needed</option>
             </select>
           </div>
-
-
         </div>
 
         <!-- GOMAN Information -->
@@ -656,7 +638,7 @@
         👨‍💼 School Admin Access
       </button>
 
-      <!-- Password Input Section (Hidden by default) -->
+      <!-- Password Input Section -->
       <div id="passwordSection" style="display: none; margin-top: 20px;">
         <h4 id="roleTitle" style="color: #1a73e8; margin-bottom: 15px;"></h4>
         <input 
@@ -679,186 +661,98 @@
   </div>
 
   <script>
-    /* 
-    GOOGLE APPS SCRIPT SETUP INSTRUCTIONS:
-    
-    1. Go to script.google.com and create a new project
-    2. Replace default code with this Google Apps Script code:
-    
-    function doPost(e) {
-      try {
-        // Your Google Sheet ID
-        const SHEET_ID = '1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk';
-        const DRIVE_FOLDER_ID = '1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS';
-        
-        // Open the spreadsheet
-        const spreadsheet = SpreadsheetApp.openById(SHEET_ID);
-        
-        // Get or create sheets
-        let reportsSheet = spreadsheet.getSheetByName('Reports');
-        let privateSheet = spreadsheet.getSheetByName('Private_Data');
-        
-        if (!reportsSheet) {
-          reportsSheet = spreadsheet.insertSheet('Reports');
-          reportsSheet.appendRow(['Report ID', 'Timestamp', 'Damage Type', 'Location', 'Priority', 'Photo URL', 'Status']);
-        }
-        
-        if (!privateSheet) {
-          privateSheet = spreadsheet.insertSheet('Private_Data');
-          privateSheet.appendRow(['Report ID', 'Student Name', 'LRN', 'Timestamp']);
-          // Hide this sheet from regular view
-          privateSheet.hideSheet();
-        }
-        
-        // Get form data
-        const data = e.parameter;
-        const files = e.parameter.photo;
-        
-        // Generate unique report ID
-        const reportId = 'RPT' + Date.now();
-        
-        // Handle photo upload if exists
-        let photoUrl = 'No photo';
-        if (files) {
-          const folder = DriveApp.getFolderById(DRIVE_FOLDER_ID);
-          const blob = Utilities.newBlob(files, 'image/jpeg', reportId + '_photo.jpg');
-          const file = folder.createFile(blob);
-          photoUrl = file.getUrl();
-        }
-        
-        // Add to Reports sheet (PUBLIC - visible to all)
-        reportsSheet.appendRow([
-          reportId,
-          new Date(data.timestamp),
-          data.reportType,
-          data.location,
-          data.priority,
-          photoUrl,
-          'Open'
-        ]);
-        
-        // Add to Private sheet (HIDDEN - admin only)
-        privateSheet.appendRow([
-          reportId,
-          data.reporterName,
-          data.lrnNumber,
-          new Date(data.timestamp)
-        ]);
-        
-        return ContentService.createTextOutput(
-          JSON.stringify({success: true})
-        ).setMimeType(ContentService.MimeType.JSON);
-        
-      } catch (error) {
-        return ContentService.createTextOutput(
-          JSON.stringify({success: false, error: error.toString()})
-        ).setMimeType(ContentService.MimeType.JSON);
-  }
-}
+    let photoFile = null;
+    let selectedRole = '';
 
-3. Deploy as web app with access "Anyone"
-4. Copy the web app URL and replace 'YOUR_SCRIPT_ID_HERE' below
-5. The script will automatically create two sheets:
-   - "Reports" (PUBLIC): Report ID, Timestamp, Damage Type, Location, Priority, Photo URL, Status
-   - "Private_Data" (HIDDEN): Report ID, Student Name, LRN, Timestamp
-*/
-
-let photoFile = null;
-
-// Photo upload functionality
-document.getElementById('photoInput').addEventListener('change', function(e) {
-  handlePhotoSelection(e.target.files[0]);
-});
-
-// Camera input functionality
-document.getElementById('cameraInput').addEventListener('change', function(e) {
-  handlePhotoSelection(e.target.files[0]);
-});
-
-function handlePhotoSelection(file) {
-  if (file) {
-    if (file.size > 50 * 1024 * 1024) { // 50MB limit
-      showError('File size must be less than 50MB');
-      return;
+    // Photo upload functionality
+    document.getElementById('photoInput').addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        handlePhotoSelection(e.target.files[0]);
       }
+    });
 
-    photoFile = file;
-    const reader = new FileReader();
-    reader.onload = function(e) {
-      document.getElementById('imagePreview').innerHTML =
-        `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">`;
-    };
-    reader.onerror = function() {
-      showError('Error reading the image file. Please try again.');
-    };
-    reader.readAsDataURL(file);
-  }
-}
+    // Camera input functionality - prevent reopening after selection
+    document.getElementById('cameraInput').addEventListener('change', function(e) {
+      if (e.target.files.length > 0) {
+        handlePhotoSelection(e.target.files[0]);
+        // Clear the input to prevent issues with subsequent selections
+        setTimeout(() => {
+          e.target.value = '';
+        }, 100);
+      }
+    });
 
-function openCamera() {
-  // For mobile devices, trigger the camera input directly
-  const cameraInput = document.getElementById('cameraInput');
-  cameraInput.click();
-
-  // Add debugging to check if camera is working
-  cameraInput.addEventListener('change', function(e) {
-    if (e.target.files.length === 0) {
-      console.log('No file selected from camera');
-    } else {
-      console.log('Camera file selected:', e.target.files[0]);
+    function handlePhotoSelection(file) {
+      if (file) {
+        if (file.size > 50 * 1024 * 1024) { // 50MB limit
+          showError('File size must be less than 50MB');
+          return;
+        }
+        
+        photoFile = file;
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById('imagePreview').innerHTML = 
+            `<img src="${e.target.result}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 12px;">`;
+        };
+        reader.readAsDataURL(file);
+      }
     }
-  }, { once: true });
-}
 
-function clearPhoto() {
-  photoFile = null;
-  document.getElementById('photoInput').value = '';
-  document.getElementById('cameraInput').value = '';
-  document.getElementById('imagePreview').innerHTML = `
-    <div class="preview-content">
-      <div class="preview-icon">📷</div>
-      <div>Click to upload or take a photo</div>
-      <small>Supports: JPG, PNG, GIF </small>
-    </div>
-  `;
-}
-
-// Form submission
-document.getElementById('reportForm').addEventListener('submit', function(e) {
-  e.preventDefault();
-
-  if (validateForm()) {
-    submitReport();
-  } else {
-    showError('Please fill in all required fields.');
-  }
-});
-
-function validateForm() {
-  const requiredFields = ['reportType', 'location', 'priority', 'reporterName', 'lrnNumber'];
-
-  for (let field of requiredFields) {
-    const element = document.getElementById(field);
-    if (!element || !element.value.trim()) {
-      showError('Please fill in all required fields.');
-      if (element) element.focus();
-      return false;
+    function openCamera() {
+      const cameraInput = document.getElementById('cameraInput');
+      // Only trigger if no photo is currently selected or being processed
+      if (!photoFile) {
+        cameraInput.click();
+      }
     }
-  }
 
-  // Validate LRN is numeric and reasonable length
-  const lrn = document.getElementById('lrnNumber').value;
-  if (!/^\\d{6,12}$/.test(lrn)) {
-    showError('LRN must be 6-12 digits only.');
-    document.getElementById('lrnNumber').focus();
-    return false;
-  }
+    function clearPhoto() {
+      photoFile = null;
+      document.getElementById('photoInput').value = '';
+      document.getElementById('cameraInput').value = '';
+      document.getElementById('imagePreview').innerHTML = `
+        <div class="preview-content">
+          <div class="preview-icon">📷</div>
+          <div>Click to upload or take a photo</div>
+          <small>Supports: JPG, PNG, GIF (Max: 50MB)</small>
+        </div>
+      `;
+    }
 
-  return true;
-}
+    // Form submission
+    document.getElementById('reportForm').addEventListener('submit', function(e) {
+      e.preventDefault();
+      
+      if (validateForm()) {
+        submitReport();
+      } else {
+        showError('Please fill in all required fields.');
+      }
+    });
 
-function submitReport() {
+    function validateForm() {
+      const requiredFields = ['reportType', 'location', 'priority', 'reporterName', 'lrnNumber'];
+      
+      for (let field of requiredFields) {
+        const element = document.getElementById(field);
+        if (!element || !element.value.trim()) {
+          if (element) element.focus();
+          return false;
+        }
+      }
+      
+      // Validate LRN is numeric
+      const lrn = document.getElementById('lrnNumber').value;
+      if (!/^\d+$/.test(lrn)) {
+        showError('LRN must contain only numbers.');
+        document.getElementById('lrnNumber').focus();
+        return false;
+      }
+      
+ function submitReport() {
   const submitBtn = document.getElementById('submitBtn');
+
   // Show loading overlay
   document.getElementById('loadingOverlay').style.display = 'flex';
 
@@ -866,76 +760,35 @@ function submitReport() {
   submitBtn.disabled = true;
   submitBtn.innerHTML = '⏳ Submitting...';
 
-  // Prepare form data for Google Apps Script
+  // Prepare form data
   const formData = new FormData();
 
-  // Add form fields
   formData.append('reportType', document.getElementById('reportType').value);
   formData.append('location', document.getElementById('location').value);
   formData.append('priority', document.getElementById('priority').value);
   formData.append('reporterName', document.getElementById('reporterName').value);
   formData.append('lrnNumber', document.getElementById('lrnNumber').value);
-  formData.append('reporterRole', 'student'); // All reports are from students
+  formData.append('reporterRole', 'student');
   formData.append('timestamp', new Date().toISOString());
 
-  // Add photo if exists
   if (photoFile) {
     formData.append('photo', photoFile);
   }
 
-  // Google Apps Script Web App URL
+  // Google Apps Script URL
   const SCRIPT_URL = '<https://script.google.com/macros/s/AKfycbxMrUxsEcBjTncJunTQ4vRmLsuT1BXaO9zP2B3O85jefiGDIJa_vLvC3mCXYGJUAdn6cA/exec>';
 
-  // Submit to Google Apps Script
   fetch(SCRIPT_URL, {
     method: 'POST',
     body: formData
   })
-  .then(response => {
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-    return response.json();
-  })
+  .then(response => response.json())
   .then(result => {
     // Hide loading overlay
     document.getElementById('loadingOverlay').style.display = 'none';
     if (result.success) {
-      // Generate report ID for display
-      const reportId = 'RPT' + Date.now().toString().slice(-8);
-      const priority = document.getElementById('priority').value;
-      const damageType = document.getElementById('reportType').value;
-      const location = document.getElementById('location').value;
-
-      // Priority-based notifications
-      if (priority === 'critical') {
-        showNotification(
-          '🚨 Critical Damage Reported!',
-          `URGENT: ${damageType} at ${location}. Report ID: ${reportId}`,
-          '🚨'
-        );
-      } else if (priority === 'high') {
-        showNotification(
-          '⚠️ High Priority Damage',
-          `${damageType} reported at ${location}. Report ID: ${reportId}`,
-          '⚠️'
-        );
-      } else {
-        showNotification(
-          'Report Submitted Successfully!',
-          `${damageType} at ${location} has been logged. Report ID: ${reportId}`,
-          '✅'
-        );
-      }
-
-      // Show success message with better feedback
-      alert('✅ Report submitted successfully!\\n\\n📊 Report ID: ' + reportId + '\\n📚 Check Library to view all reports\\n👥 Admins can access private data via Admin Access');
-
-      // Refresh the page to reset form
-      setTimeout(() => {
-        window.location.reload();
-      }, 2000);
-
+      alert('Report submitted successfully!');
+      window.location.reload();
     } else {
       throw new Error(result.error || 'Submission failed');
     }
@@ -945,19 +798,17 @@ function submitReport() {
     document.getElementById('loadingOverlay').style.display = 'none';
 
     console.error('Submission error:', error);
-    showError('❌ Failed to submit report. Please check your internet connection and try again.\\n\\nIf the problem persists, contact the IT administrator.');
+    showError('Failed to submit report. Please try again.');
     submitBtn.disabled = false;
     submitBtn.innerHTML = '📤 Submit Damage Report';
   });
 }
 
-function showSuccess(message = 'Your facility damage report has been submitted successfully! Thank you for helping us maintain our school facilities.') {
+function showSuccess(message = 'Your facility damage report has been submitted successfully!') {
   const successElement = document.getElementById('successMessage');
   successElement.innerHTML = `✅ ${message}`;
   successElement.style.display = 'block';
   document.getElementById('errorMessage').style.display = 'none';
-        
-    // Scroll to top to show message
   window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -968,28 +819,11 @@ function showError(message) {
   }
   errorElement.style.display = 'block';
   document.getElementById('successMessage').style.display = 'none';
-
-  // Scroll to top to show message
   window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-
-
-// Navigation functions
-function goHome() {
-  alert('Redirecting to GOMAN Home...');
-}
-
-function goToLibrary() {
-  // Redirect to the GOMAN Google Drive folder
-  window.open('<https://drive.google.com/drive/folders/1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS>', '_blank');
-}
-
-let selectedRole = '';
-
+    }
+    // Admin access functions
 function showAdminAccess() {
   document.getElementById('adminModal').style.display = 'block';
-  // Reset modal state
   document.getElementById('passwordSection').style.display = 'none';
   document.getElementById('adminPassword').value = '';
   selectedRole = '';
@@ -1016,59 +850,36 @@ function cancelPasswordInput() {
   document.getElementById('passwordSection').style.display = 'none';
   document.getElementById('adminPassword').value = '';
   selectedRole = '';
-}
-
-function verifyPassword() {
+    }
+    function verifyPassword() {
   const password = document.getElementById('adminPassword').value;
 
-  if (!password.trim()) {
-    alert('Please enter a password.');
-    document.getElementById('adminPassword').focus();
-    return;
-  }
-
   if (selectedRole === 'teacher' && password === 'TeachersWeb0') {
-    showNotification(
-      'Teacher Access Granted',
-      'Accessing private student data. Handle with care.',
-      '👨‍🏫'
-    );
-    alert('Teacher access granted! Redirecting to private student data...\\n\\nNote: This contains sensitive student information. Use responsibly.');
+    alert('Teacher access granted! Redirecting to private student data...');
     window.open('<https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data>', '_blank');
     closeAdminModal();
   } else if (selectedRole === 'admin' && password === 'SchoolProgrammers0') {
-    showNotification(
-      'Admin Access Granted',
-      'Accessing private student data. Handle with care.',
-      '👨‍💼'
-    );
-    alert('Admin access granted! Redirecting to private student data...\\n\\nNote: This contains sensitive student information. Use responsibly.');
+    alert('Admin access granted! Redirecting to private student data...');
     window.open('<https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data>', '_blank');
     closeAdminModal();
   } else {
-    showNotification(
-      'Access Denied',
-      'Invalid password entered. Contact administrator if needed.',
-      '❌'
-    );
-    alert('Invalid password. Please try again.\\n\\nContact the school administrator if you forgot your password.');
+    alert('Invalid password. Please try again.');
     document.getElementById('adminPassword').value = '';
     document.getElementById('adminPassword').focus();
   }
 }
 
-// Allow Enter key to submit password
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('adminPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      verifyPassword();
-    }
-  });
-});
+// Navigation functions
+function goHome() {
+  alert('Redirecting to GOMAN Home...');
+}
+
+function goToLibrary() {
+  window.open('<https://drive.google.com/drive/folders/1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS>', '_blank');
+}
 
 function logout() {
   if (confirm('Are you sure you want to logout?')) {
-    // Redirect to Google main page
     window.location.href = '<https://www.google.com>';
   }
 }
@@ -1080,6 +891,15 @@ window.onclick = function(event) {
     closeAdminModal();
   }
 }
+
+// Allow Enter key to submit password
+document.addEventListener('DOMContentLoaded', function() {
+  document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      verifyPassword();
+    }
+  });
+});
 </script>
 </body>
 </html>
