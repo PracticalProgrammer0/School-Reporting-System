@@ -473,10 +473,10 @@
   <div class="header">
     <h1>🏢 GOMAN Facility Damage Reporting</h1>
     <nav class="nav-links">
-      <a onclick="goHome()">🏠 Home</a>
-      <a onclick="goToLibrary()">📚 Library</a>
-      <a onclick="showAdminAccess()">👥 Admin Access</a>
-      <a onclick="logout()">🚪 Logout</a>
+      <a id="homeBtn">🏠 Home</a>
+      <a id="libraryBtn">📚 Library</a>
+      <a id="adminBtn">👥 Admin Access</a>
+      <a id="logoutBtn">🚪 Logout</a>
     </nav>
   </div>
 
@@ -518,11 +518,11 @@
               </div>
               <div class="file-input-wrapper">
                 <input type="file" id="cameraInput" class="file-input" accept="image/*" capture="environment">
-                <label for="cameraInput" class="file-input-label" onclick="openCamera()" style="background: linear-gradient(135deg, #27ae60, #2ecc71);">
+                <button type="button" id="cameraBtn" class="file-input-label" style="background: linear-gradient(135deg, #27ae60, #2ecc71); border: none; width: 100%;">
                   📱 Take Photo
-                </label>
+                </button>
               </div>
-              <button type="button" class="camera-btn" onclick="clearPhoto()" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
+              <button type="button" id="clearPhotoBtn" class="camera-btn" style="background: linear-gradient(135deg, #e74c3c, #c0392b);">
                 🗑️ Remove Photo
               </button>
             </div>
@@ -626,15 +626,15 @@
   <!-- Admin Access Modal -->
   <div id="adminModal" class="admin-modal">
     <div class="admin-modal-content">
-      <span class="close-admin-modal" onclick="closeAdminModal()">&times;</span>
+      <span class="close-admin-modal" id="closeModalBtn">&times;</span>
       <h3>Admin Access</h3>
       <p style="margin-bottom: 20px; color: #666;">Select your role to access private student data:</p>
       
-      <button class="admin-role-btn teacher" onclick="showPasswordInput('teacher')">
+      <button class="admin-role-btn teacher" id="teacherBtn">
         👨‍🏫 Teacher Access
       </button>
       
-      <button class="admin-role-btn" onclick="showPasswordInput('admin')">
+      <button class="admin-role-btn" id="adminAccessBtn">
         👨‍💼 School Admin Access
       </button>
 
@@ -649,10 +649,10 @@
           style="margin-bottom: 15px;"
         >
         <div style="display: flex; gap: 10px;">
-          <button class="admin-role-btn" onclick="verifyPassword()" style="flex: 1;">
+          <button class="admin-role-btn" id="loginBtn" style="flex: 1;">
             🔓 Login
           </button>
-          <button class="admin-role-btn" onclick="cancelPasswordInput()" style="flex: 1; background: linear-gradient(135deg, #e74c3c, #c0392b);">
+          <button class="admin-role-btn" id="cancelBtn" style="flex: 1; background: linear-gradient(135deg, #e74c3c, #c0392b);">
             ❌ Cancel
           </button>
         </div>
@@ -750,156 +750,185 @@
         return false;
       }
       
- function submitReport() {
-  const submitBtn = document.getElementById('submitBtn');
-
-  // Show loading overlay
-  document.getElementById('loadingOverlay').style.display = 'flex';
-
-  // Disable submit button
-  submitBtn.disabled = true;
-  submitBtn.innerHTML = '⏳ Submitting...';
-
-  // Prepare form data
-  const formData = new FormData();
-
-  formData.append('reportType', document.getElementById('reportType').value);
-  formData.append('location', document.getElementById('location').value);
-  formData.append('priority', document.getElementById('priority').value);
-  formData.append('reporterName', document.getElementById('reporterName').value);
-  formData.append('lrnNumber', document.getElementById('lrnNumber').value);
-  formData.append('reporterRole', 'student');
-  formData.append('timestamp', new Date().toISOString());
-
-  if (photoFile) {
-    formData.append('photo', photoFile);
-  }
-
-  // Google Apps Script URL
-  const SCRIPT_URL = '<https://script.google.com/macros/s/AKfycbxMrUxsEcBjTncJunTQ4vRmLsuT1BXaO9zP2B3O85jefiGDIJa_vLvC3mCXYGJUAdn6cA/exec>';
-
-  fetch(SCRIPT_URL, {
-    method: 'POST',
-    body: formData
-  })
-  .then(response => response.json())
-  .then(result => {
-    // Hide loading overlay
-    document.getElementById('loadingOverlay').style.display = 'none';
-    if (result.success) {
-      alert('Report submitted successfully!');
-      window.location.reload();
-    } else {
-      throw new Error(result.error || 'Submission failed');
+      return true;
     }
-  })
-  .catch(error => {
-    // Hide loading overlay
-    document.getElementById('loadingOverlay').style.display = 'none';
 
-    console.error('Submission error:', error);
-    showError('Failed to submit report. Please try again.');
-    submitBtn.disabled = false;
-    submitBtn.innerHTML = '📤 Submit Damage Report';
-  });
-}
-
-function showSuccess(message = 'Your facility damage report has been submitted successfully!') {
-  const successElement = document.getElementById('successMessage');
-  successElement.innerHTML = `✅ ${message}`;
-  successElement.style.display = 'block';
-  document.getElementById('errorMessage').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-}
-
-function showError(message) {
-  const errorElement = document.getElementById('errorMessage');
-  if (message) {
-    errorElement.innerHTML = `❌ ${message}`;
-  }
-  errorElement.style.display = 'block';
-  document.getElementById('successMessage').style.display = 'none';
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+    function submitReport() {
+      const submitBtn = document.getElementById('submitBtn');
+      
+      // Show loading overlay
+      document.getElementById('loadingOverlay').style.display = 'flex';
+      
+      // Disable submit button
+      submitBtn.disabled = true;
+      submitBtn.innerHTML = '⏳ Submitting...';
+      
+      // Prepare form data
+      const formData = new FormData();
+      
+      formData.append('reportType', document.getElementById('reportType').value);
+      formData.append('location', document.getElementById('location').value);
+      formData.append('priority', document.getElementById('priority').value);
+      formData.append('reporterName', document.getElementById('reporterName').value);
+      formData.append('lrnNumber', document.getElementById('lrnNumber').value);
+      formData.append('reporterRole', 'student');
+      formData.append('timestamp', new Date().toISOString());
+      
+      if (photoFile) {
+        formData.append('photo', photoFile);
+      }
+      
+      // Google Apps Script URL
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxMrUxsEcBjTncJunTQ4vRmLsuT1BXaO9zP2B3O85jefiGDIJa_vLvC3mCXYGJUAdn6cA/exec';
+      
+      fetch(SCRIPT_URL, {
+        method: 'POST',
+        body: formData
+      })
+      .then(response => response.json())
+      .then(result => {
+        // Hide loading overlay
+        document.getElementById('loadingOverlay').style.display = 'none';
+        
+        if (result.success) {
+          alert('Report submitted successfully!');
+          window.location.reload();
+        } else {
+          throw new Error(result.error || 'Submission failed');
+        }
+      })
+      .catch(error => {
+        // Hide loading overlay
+        document.getElementById('loadingOverlay').style.display = 'none';
+        
+        console.error('Submission error:', error);
+        showError('Failed to submit report. Please try again.');
+        submitBtn.disabled = false;
+        submitBtn.innerHTML = '📤 Submit Damage Report';
+      });
     }
+
+    function showSuccess(message = 'Your facility damage report has been submitted successfully!') {
+      const successElement = document.getElementById('successMessage');
+      successElement.innerHTML = `✅ ${message}`;
+      successElement.style.display = 'block';
+      document.getElementById('errorMessage').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    function showError(message) {
+      const errorElement = document.getElementById('errorMessage');
+      if (message) {
+        errorElement.innerHTML = `❌ ${message}`;
+      }
+      errorElement.style.display = 'block';
+      document.getElementById('successMessage').style.display = 'none';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
     // Admin access functions
-function showAdminAccess() {
-  document.getElementById('adminModal').style.display = 'block';
-  document.getElementById('passwordSection').style.display = 'none';
-  document.getElementById('adminPassword').value = '';
-  selectedRole = '';
-}
-
-function closeAdminModal() {
-  document.getElementById('adminModal').style.display = 'none';
-  document.getElementById('passwordSection').style.display = 'none';
-  document.getElementById('adminPassword').value = '';
-  selectedRole = '';
-}
-
-function showPasswordInput(role) {
-  selectedRole = role;
-  document.getElementById('passwordSection').style.display = 'block';
-  document.getElementById('roleTitle').textContent =
-    role === 'teacher' ? '👨‍🏫 Teacher Password' : '👨‍💼 Admin Password';
-  document.getElementById('adminPassword').placeholder =
-    `Enter ${role} password`;
-  document.getElementById('adminPassword').focus();
-}
-
-function cancelPasswordInput() {
-  document.getElementById('passwordSection').style.display = 'none';
-  document.getElementById('adminPassword').value = '';
-  selectedRole = '';
+    function showAdminAccess() {
+      document.getElementById('adminModal').style.display = 'block';
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
     }
+
+    function closeAdminModal() {
+      document.getElementById('adminModal').style.display = 'none';
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
+    }
+
+    function showPasswordInput(role) {
+      selectedRole = role;
+      document.getElementById('passwordSection').style.display = 'block';
+      document.getElementById('roleTitle').textContent = 
+        role === 'teacher' ? '👨‍🏫 Teacher Password' : '👨‍💼 Admin Password';
+      document.getElementById('adminPassword').placeholder = 
+        `Enter ${role} password`;
+      document.getElementById('adminPassword').focus();
+    }
+
+    function cancelPasswordInput() {
+      document.getElementById('passwordSection').style.display = 'none';
+      document.getElementById('adminPassword').value = '';
+      selectedRole = '';
+    }
+
     function verifyPassword() {
-  const password = document.getElementById('adminPassword').value;
-
-  if (selectedRole === 'teacher' && password === 'TeachersWeb0') {
-    alert('Teacher access granted! Redirecting to private student data...');
-    window.open('<https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data>', '_blank');
-    closeAdminModal();
-  } else if (selectedRole === 'admin' && password === 'SchoolProgrammers0') {
-    alert('Admin access granted! Redirecting to private student data...');
-    window.open('<https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data>', '_blank');
-    closeAdminModal();
-  } else {
-    alert('Invalid password. Please try again.');
-    document.getElementById('adminPassword').value = '';
-    document.getElementById('adminPassword').focus();
-  }
-}
-
-// Navigation functions
-function goHome() {
-  alert('Redirecting to GOMAN Home...');
-}
-
-function goToLibrary() {
-  window.open('<https://drive.google.com/drive/folders/1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS>', '_blank');
-}
-
-function logout() {
-  if (confirm('Are you sure you want to logout?')) {
-    window.location.href = '<https://www.google.com>';
-  }
-}
-
-// Close modal when clicking outside
-window.onclick = function(event) {
-  const modal = document.getElementById('adminModal');
-  if (event.target === modal) {
-    closeAdminModal();
-  }
-}
-
-// Allow Enter key to submit password
-document.addEventListener('DOMContentLoaded', function() {
-  document.getElementById('adminPassword').addEventListener('keypress', function(e) {
-    if (e.key === 'Enter') {
-      verifyPassword();
+      const password = document.getElementById('adminPassword').value;
+      
+      if (selectedRole === 'teacher' && password === 'TeachersWeb0') {
+        alert('Teacher access granted! Redirecting to private student data...');
+        window.open('https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data', '_blank');
+        closeAdminModal();
+      } else if (selectedRole === 'admin' && password === 'SchoolProgrammers0') {
+        alert('Admin access granted! Redirecting to private student data...');
+        window.open('https://docs.google.com/spreadsheets/d/1AIpAcI6Km-zZucXgksnBlrGo3ufPnvYmZKkX4ysxndk/edit#gid=Private_Data', '_blank');
+        closeAdminModal();
+      } else {
+        alert('Invalid password. Please try again.');
+        document.getElementById('adminPassword').value = '';
+        document.getElementById('adminPassword').focus();
+      }
     }
-  });
-});
-</script>
+
+    // Navigation functions
+    function goHome() {
+      alert('GOMAN Home - This would redirect to your main school portal');
+    }
+
+    function goToLibrary() {
+      // Open your Google Drive folder in new tab
+      window.open('https://drive.google.com/drive/folders/1sMiHPk6gZB41pSHx2H_TCgGejSg_NaXS', '_blank');
+    }
+
+    function logout() {
+      if (confirm('Are you sure you want to logout?')) {
+        window.location.href = 'https://www.google.com';
+      }
+    }
+
+    // Close modal when clicking outside
+    document.addEventListener('click', function(event) {
+      const modal = document.getElementById('adminModal');
+      if (event.target === modal) {
+        closeAdminModal();
+      }
+    });
+
+    // Allow Enter key to submit password
+    document.addEventListener('DOMContentLoaded', function() {
+      // Navigation event listeners
+      document.getElementById('homeBtn').addEventListener('click', goHome);
+      document.getElementById('libraryBtn').addEventListener('click', goToLibrary);
+      document.getElementById('adminBtn').addEventListener('click', showAdminAccess);
+      document.getElementById('logoutBtn').addEventListener('click', logout);
+      
+      // Photo controls event listeners
+      document.getElementById('cameraBtn').addEventListener('click', openCamera);
+      document.getElementById('clearPhotoBtn').addEventListener('click', clearPhoto);
+      
+      // Admin modal event listeners
+      document.getElementById('closeModalBtn').addEventListener('click', closeAdminModal);
+      document.getElementById('teacherBtn').addEventListener('click', function() {
+        showPasswordInput('teacher');
+      });
+      document.getElementById('adminAccessBtn').addEventListener('click', function() {
+        showPasswordInput('admin');
+      });
+      document.getElementById('loginBtn').addEventListener('click', verifyPassword);
+      document.getElementById('cancelBtn').addEventListener('click', cancelPasswordInput);
+      
+      // Enter key support for password
+      document.getElementById('adminPassword').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          verifyPassword();
+        }
+      });
+    });
+  </script>
 </body>
 </html>
