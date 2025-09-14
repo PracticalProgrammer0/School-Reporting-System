@@ -763,27 +763,29 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '⏳ Submitting...';
       
-      // Prepare form data
-      const formData = new FormData();
-      
-      formData.append('reportType', document.getElementById('reportType').value);
-      formData.append('location', document.getElementById('location').value);
-      formData.append('priority', document.getElementById('priority').value);
-      formData.append('reporterName', document.getElementById('reporterName').value);
-      formData.append('lrnNumber', document.getElementById('lrnNumber').value);
-      formData.append('reporterRole', 'student');
-      formData.append('timestamp', new Date().toISOString());
+      // Prepare form data as URL parameters (not FormData)
+      const params = new URLSearchParams();
+      params.append('reportType', document.getElementById('reportType').value);
+      params.append('location', document.getElementById('location').value);
+      params.append('priority', document.getElementById('priority').value);
+      params.append('reporterName', document.getElementById('reporterName').value);
+      params.append('lrnNumber', document.getElementById('lrnNumber').value);
+      params.append('reporterRole', 'student');
+      params.append('timestamp', new Date().toISOString());
       
       if (photoFile) {
-        formData.append('photo', photoFile);
+        params.append('photo', 'photo_attached');
       }
       
       // Google Apps Script URL
-      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbxUHugFlF57iyXPacPU58JHZnUatcJSXDg5nD40nvfLlK8dejqPPTpV0PBYaTa_NGVf/exec';
+      const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsk_uPtGqxVNeytH2qxIUUjYyDVdJVYF7LWxPC0S1N_71kGx4HsFGY8ne_ZTObWJfbdQ/exec';
       
       fetch(SCRIPT_URL, {
         method: 'POST',
-        body: formData
+        headers: {
+          'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        body: params.toString()
       })
       .then(response => response.json())
       .then(result => {
@@ -932,5 +934,3 @@
   </script>
 </body>
 </html>
-
-
