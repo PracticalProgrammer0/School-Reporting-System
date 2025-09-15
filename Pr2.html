@@ -512,12 +512,11 @@
             <label for="reportType">Type of Damage *</label>
             <select id="reportType" class="form-control" required>
               <option value="">-- Select Damage Type --</option>
-              <option value="furniture">Furniture Damage</option>
-              <option value="equipment">Equipment Malfunction</option>
-              <option value="infrastructure">Infrastructure/Building Damage</option>
-              <option value="electrical">Electrical Issues</option>
-              <option value="plumbing">Plumbing Issues</option>
-              <option value="safety">Safety Hazard</option>
+              <option value="Furniture">Furniture Damage</option>
+              <option value="Equipment">Equipment Malfunction</option>
+              <option value="Infrastructure">Infrastructure/Building Damage</option>
+              <option value="Electrical">Electrical Issues</option>
+              <option value="Safety">Safety Hazard</option>
             </select>
           </div>
 
@@ -525,13 +524,13 @@
             <label for="location">Location *</label>
             <select id="location" class="form-control" required>
               <option value="">-- Select Location --</option>
-              <option value="11stem1">11 STEM 1 - ROOM AVR 3</option>
-              <option value="11stem2">11 STEM 2 - ROOM 304</option>
-              <option value="11stem3">11 STEM 3 - STEM LAB</option>
-              <option value="12stem1">12 STEM 1 - ROOM 310 B</option>
-              <option value="12stem2">12 STEM 2 - ROOM 311 A</option>
-              <option value="12stem3">12 STEM 3 - ROOM 311 B</option>
-              <option value="other">Other Location</option>
+              <option value="11 STEM 1 - ROOM AVR 3">11 STEM 1 - ROOM AVR 3</option>
+              <option value="11 STEM 2 - ROOM 304">11 STEM 2 - ROOM 304</option>
+              <option value="11 STEM 3 - STEM LAB">11 STEM 3 - STEM LAB</option>
+              <option value="12 STEM 1 - ROOM 310 B">12 STEM 1 - ROOM 310 B</option>
+              <option value="12 STEM 2 - ROOM 311 A">12 STEM 2 - ROOM 311 A</option>
+              <option value="12 STEM 3 - ROOM 311 B">12 STEM 3 - ROOM 311 B</option>
+              <option value="Other Location">Other Location</option>
             </select>
           </div>
 
@@ -539,10 +538,10 @@
             <label for="priority">Priority Level *</label>
             <select id="priority" class="form-control" required>
               <option value="">-- Select Priority --</option>
-              <option value="low">Low - Minor cosmetic damage</option>
-              <option value="medium">Medium - Functional but needs repair</option>
-              <option value="high">High - Affects daily operations</option>
-              <option value="critical">Critical - Safety hazard/immediate attention needed</option>
+              <option value="Low">Low - Minor cosmetic damage</option>
+              <option value="Medium">Medium - Functional but needs repair</option>
+              <option value="High">High - Affects daily operations</option>
+              <option value="Critical">Critical - Safety hazard/immediate attention needed</option>
             </select>
           </div>
         </div>
@@ -635,6 +634,7 @@
 
   <script>
     let selectedRole = '';
+    let reportCounter = 0; // Counter for report IDs
 
     // Form submission
     document.getElementById('reportForm').addEventListener('submit', function(e) {
@@ -669,6 +669,11 @@
       return true;
     }
 
+    function generateReportId() {
+      // Generate 5-digit padded number starting from 00000
+      return reportCounter.toString().padStart(5, '0');
+    }
+
     function submitReport() {
       const submitBtn = document.getElementById('submitBtn');
       
@@ -679,15 +684,23 @@
       submitBtn.disabled = true;
       submitBtn.innerHTML = '⏳ Submitting...';
       
+      // Generate Report ID
+      const reportId = generateReportId();
+      reportCounter++; // Increment for next report
+      
+      // Create timestamp
+      const now = new Date();
+      const timestamp = now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+      
       // Prepare form data as URL parameters
       const params = new URLSearchParams();
+      params.append('reportId', reportId);
+      params.append('timestamp', timestamp);
       params.append('reportType', document.getElementById('reportType').value);
       params.append('location', document.getElementById('location').value);
       params.append('priority', document.getElementById('priority').value);
       params.append('reporterName', document.getElementById('reporterName').value);
       params.append('lrnNumber', document.getElementById('lrnNumber').value);
-      params.append('reporterRole', 'student');
-      params.append('timestamp', new Date().toISOString());
       
       // Google Apps Script URL
       const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzsk_uPtGqxVNeytH2qxIUUjYyDVdJVYF7LWxPC0S1N_71kGx4HsFGY8ne_ZTObWJfbdQ/exec';
@@ -719,6 +732,7 @@
         showError('Failed to submit report. Please try again.');
         submitBtn.disabled = false;
         submitBtn.innerHTML = '📤 Submit Damage Report';
+        reportCounter--; // Decrement if submission failed
       });
     }
 
